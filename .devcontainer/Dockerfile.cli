@@ -1,0 +1,74 @@
+FROM php:8.1-cli
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    vim \
+    nano \
+    wget \
+    mariadb-client \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-install \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    intl \
+    xml \
+    opcache
+
+# Install Redis extension
+RUN pecl install redis && docker-php-ext-enable redis
+
+# Install Xdebug
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Install Drush globally
+RUN composer global require drush/drush:^11 \
+    && ln -s /root/.composer/vendor/bin/drush /usr/local/bin/drush
+
+# Install Node.js and npm (optional for frontend tooling)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Install ttyd for web terminal
+RUN wget -qO- https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 > /usr/local/bin/ttyd \
+    && chmod +x /usr/local/bin/ttyd
+
+# Configure PHP
+COPY config/php-cli.ini /usr/local/etc/php/php.ini
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Create startup script
+RUN echo '#!/bin/bash\n\
+echo "Starting Drupal CLI environment..."\n\
+echo "Available commands: composer, drush, php, git, npm, node"\n\
+echo "Web terminal available at http://localhost:8084"\n\
+echo "Current directory: $(pwd)"\n\
+echo ""\n\
+# Start ttyd in background\n\
+ttyd --port 8084 --interface 0.0.0.0 --base-path /terminal bash &\n\
+# Keep container running\n\
+tail -f /dev/null\n\
+' > /usr/local/bin/start.sh \
+    && chmod +x /usr/local/bin/start.sh
+
+EXPOSE 8084
+
+CMD ["/usr/local/bin/start.sh"]

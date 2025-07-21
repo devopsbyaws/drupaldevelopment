@@ -1,0 +1,157 @@
+version: '3.8'
+
+services:
+  # Web-based VS Code
+  vscode:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile.vscode
+    container_name: drupal_vscode
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./drupal:/workspace/drupal
+      - ./config:/workspace/config
+      - ./files:/workspace/files
+      - vscode_extensions:/home/coder/.local/share/code-server/extensions
+    environment:
+      - PASSWORD=drupal123
+    networks:
+      - drupal_network
+    depends_on:
+      - mariadb
+      - redis
+    restart: unless-stopped
+
+  # CLI container with terminal access
+  cli:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile.cli
+    container_name: drupal_cli
+    ports:
+      - "8084:8084"  # ttyd terminal access
+    volumes:
+      - ./drupal:/var/www/html
+      - ./config:/config
+      - ./files:/files
+    environment:
+      - DRUPAL_DB_HOST=mariadb
+      - DRUPAL_DB_USER=drupal
+      - DRUPAL_DB_PASSWORD=drupal123
+      - DRUPAL_DB_NAME=drupal
+      - REDIS_HOST=redis
+    networks:
+      - drupal_network
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    working_dir: /var/www/html
+
+  # Web server (Apache with PHP)
+  web:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile.web
+    container_name: drupal_web
+    ports:
+      - "8000:80"
+    volumes:
+      - ./drupal:/var/www/html
+      - ./config/php.ini:/usr/local/etc/php/php.ini
+      - ./config/apache.conf:/etc/apache2/sites-available/000-default.conf
+      - ./files:/var/www/html/web/sites/default/files
+    environment:
+      - DRUPAL_DB_HOST=mariadb
+      - DRUPAL_DB_USER=drupal
+      - DRUPAL_DB_PASSWORD=drupal123
+      - DRUPAL_DB_NAME=drupal
+      - REDIS_HOST=redis
+    networks:
+      - drupal_network
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  # MariaDB
+  mariadb:
+    image: mariadb:10.9
+    container_name: drupal_mariadb
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db:/var/lib/mysql
+      - ./config/mysql.cnf:/etc/mysql/conf.d/custom.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_DATABASE=drupal
+      - MYSQL_USER=drupal
+      - MYSQL_PASSWORD=drupal123
+    networks:
+      - drupal_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot123"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: drupal_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis:/data
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    networks:
+      - drupal_network
+    restart: unless-stopped
+
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: drupal_phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=mariadb
+      - PMA_USER=root
+      - PMA_PASSWORD=root123
+      - UPLOAD_LIMIT=128M
+    networks:
+      - drupal_network
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # File Manager
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: drupal_filemanager
+    ports:
+      - "8082:80"
+    volumes:
+      - ./files:/srv/files
+      - ./drupal:/srv/drupal
+      - ./config/filebrowser.json:/config/settings.json
+    environment:
+      - FB_DATABASE=/tmp/filebrowser.db
+    networks:
+      - drupal_network
+    restart: unless-stopped
+
+volumes:
+  vscode_extensions:
+
+networks:
+  drupal_network:
+    driver: bridge

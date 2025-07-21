@@ -1,0 +1,15 @@
+[mysql]
+default-character-set = utf8mb4
+
+[mysqld]
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+max_allowed_packet = 64M
+innodb_buffer_pool_size = 256M
+innodb_log_file_size = 64M
+
+# Performance optimizations
+query_cache_type = 1
+query_cache_size = 32M
+tmp_table_size = 32M
+max_heap_table_size = 32M
