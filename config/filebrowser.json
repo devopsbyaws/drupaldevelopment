@@ -1,38 +1,8 @@
 {
   "port": 80,
   "baseURL": "",
-  "address": "",
+  "address": "0.0.0.0",
   "log": "stdout",
-  "database": "/tmp/filebrowser.db",
-  "root": "/srv",
-  "auth": {
-    "method": "json"
-  },
-  "users": [
-    {
-      "username": "admin",
-      "password": "$2a$10$0iqAAsRdlvPXnH/r6bmKt.yzWpancGRX8tn2QVWmIgDZ1o3pjzN4G",
-      "scope": ".",
-      "locale": "en",
-      "lockPassword": false,
-      "viewMode": "list",
-      "singleClick": false,
-      "perm": {
-        "admin": true,
-        "execute": true,
-        "create": true,
-        "rename": true,
-        "modify": true,
-        "delete": true,
-        "share": true,
-        "download": true
-      },
-      "commands": [],
-      "sorting": {
-        "by": "name",
-        "asc": false
-      },
-      "rules": []
-    }
-  ]
+  "database": "/database.db",
+  "root": "/srv"
 }

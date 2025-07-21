@@ -142,9 +142,11 @@ services:
     volumes:
       - ./files:/srv/files
       - ./drupal:/srv/drupal
-      - ./config/filebrowser.json:/config/settings.json
+      - ./config/filebrowser.json:/.filebrowser.json
     environment:
-      - FB_DATABASE=/tmp/filebrowser.db
+      - FB_DATABASE=/database.db
+      - FB_CONFIG=/.filebrowser.json
+      - FB_ROOT=/srv
     networks:
       - drupal_network
     restart: unless-stopped
