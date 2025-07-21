@@ -46,7 +46,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs
 
 # Install ttyd for web terminal
-RUN wget -qO- https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 > /usr/local/bin/ttyd \
+RUN wget -O /usr/local/bin/ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 \
     && chmod +x /usr/local/bin/ttyd
 
 # Configure PHP
@@ -62,8 +62,9 @@ echo "Available commands: composer, drush, php, git, npm, node"\n\
 echo "Web terminal available at http://localhost:8084"\n\
 echo "Current directory: $(pwd)"\n\
 echo ""\n\
-# Start ttyd in background\n\
-ttyd --port 8084 --interface 0.0.0.0 --base-path /terminal bash &\n\
+# Start ttyd in background with proper options\n\
+ttyd --port 8084 --interface 0.0.0.0 bash &\n\
+echo "ttyd started on port 8084"\n\
 # Keep container running\n\
 tail -f /dev/null\n\
 ' > /usr/local/bin/start.sh \
