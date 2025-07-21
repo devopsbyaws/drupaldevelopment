@@ -2,31 +2,22 @@ FROM codercom/code-server:latest
 
 USER root
 
-# Add PHP repository and update package list
+# Install PHP and extensions available in Debian
 RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    ca-certificates \
-    lsb-release \
-    apt-transport-https \
-    && add-apt-repository ppa:ondrej/php \
-    && apt-get update
-
-# Install PHP and extensions
-RUN apt-get install -y \
-    php8.1 \
-    php8.1-cli \
-    php8.1-common \
-    php8.1-mysql \
-    php8.1-zip \
-    php8.1-gd \
-    php8.1-mbstring \
-    php8.1-curl \
-    php8.1-xml \
-    php8.1-bcmath \
-    php8.1-intl \
-    php8.1-redis \
-    php8.1-opcache \
-    php8.1-xdebug \
+    php \
+    php-cli \
+    php-common \
+    php-mysql \
+    php-zip \
+    php-gd \
+    php-mbstring \
+    php-curl \
+    php-xml \
+    php-bcmath \
+    php-intl \
+    php-redis \
+    php-opcache \
+    php-xdebug \
     git \
     curl \
     wget \
