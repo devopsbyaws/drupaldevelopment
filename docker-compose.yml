@@ -142,17 +142,18 @@ services:
     volumes:
       - ./files:/srv/files
       - ./drupal:/srv/drupal
-      - ./config/filebrowser.json:/.filebrowser.json
+      - filebrowser_data:/data
     environment:
-      - FB_DATABASE=/database.db
-      - FB_CONFIG=/.filebrowser.json
+      - FB_DATABASE=/data/filebrowser.db
       - FB_ROOT=/srv
+    user: "0:0"
     networks:
       - drupal_network
     restart: unless-stopped
 
 volumes:
   vscode_extensions:
+  filebrowser_data:
 
 networks:
   drupal_network:
