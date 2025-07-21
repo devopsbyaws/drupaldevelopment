@@ -2,8 +2,17 @@ FROM codercom/code-server:latest
 
 USER root
 
-# Install PHP and extensions
+# Add PHP repository and update package list
 RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    ca-certificates \
+    lsb-release \
+    apt-transport-https \
+    && add-apt-repository ppa:ondrej/php \
+    && apt-get update
+
+# Install PHP and extensions
+RUN apt-get install -y \
     php8.1 \
     php8.1-cli \
     php8.1-common \
@@ -18,7 +27,6 @@ RUN apt-get update && apt-get install -y \
     php8.1-redis \
     php8.1-opcache \
     php8.1-xdebug \
-    composer \
     git \
     curl \
     wget \
@@ -28,8 +36,12 @@ RUN apt-get update && apt-get install -y \
     mariadb-client \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
 # Install Drush globally
 RUN composer global require drush/drush:^11 \
+    && echo 'export PATH="$HOME/.composer/vendor/bin:$PATH"' >> /home/coder/.bashrc \
     && ln -s /home/coder/.composer/vendor/bin/drush /usr/local/bin/drush
 
 # Install Node.js and npm
