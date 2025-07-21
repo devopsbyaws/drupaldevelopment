@@ -53,7 +53,7 @@ install-drupal: ## Install Drupal 10 via Composer and Drush
 	@echo "🗄️  Installing Drupal database..."
 	docker-compose exec cli drush site:install standard \
 		--db-url=mysql://drupal:drupal123@mariadb/drupal \
-		--site-name="Drupal Development" \
+		--site-name="Drupal Development\" \
 		--account-name=admin \
 		--account-pass=admin123 \
 		--yes
