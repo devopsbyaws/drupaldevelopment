@@ -45,6 +45,7 @@ cli-shell: ## Access CLI container shell
 
 install-drupal: ## Install Drupal 10 via Composer and Drush
 	@echo "🔧 Installing Drupal 10..."
+	docker-compose exec cli bash -c "rm -rf /var/www/html/* /var/www/html/.[^.]*"
 	docker-compose exec cli bash -c "composer create-project drupal/recommended-project:^10 . --no-interaction --prefer-dist"
 	docker-compose exec cli bash -c "chmod -R 755 web/sites/default"
 	docker-compose exec cli bash -c "mkdir -p web/sites/default/files && chmod -R 777 web/sites/default/files"
